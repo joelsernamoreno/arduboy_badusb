@@ -27,6 +27,8 @@ Installation:
 
 7.- Compile and upload
 
+DEFAULT PIN: RIGHT - UP - LEFT - DOWN
+
 More payloads here: https://github.com/joelsernamoreno/badusb_examples/tree/master/atmega32u4_arduino_leonardo
 
 If you have any questions you can contact me by twitter: @JoelSernaMoreno @ernesto_xload
