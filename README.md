@@ -27,4 +27,4 @@ Installation:
 
 7.- Compile and upload
 
-If you have any questions you can contact me by twitter: @JoelSernaMoreno
+If you have any questions you can contact me by twitter: @JoelSernaMoreno @ernesto_xload
