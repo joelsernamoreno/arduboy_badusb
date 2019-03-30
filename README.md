@@ -10,7 +10,9 @@ Requirements:
 
 - IDE arduino: http://arduino.cc
 
+
 Installation:
+
 1.- Download the arduino IDE and this repository
 
 2.- Install the Keyboard library
