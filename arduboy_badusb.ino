@@ -1,20 +1,38 @@
 #include <Arduboy2.h>
 #include <Keyboard.h>
+#include "FingerprintUSBHost.h"
 #include "payloads_windows.h"
 #include "payloads_linux.h"
 #include "payloads_macos.h"
+#include "passwords.h"
 
+String user;
+String pass;
 String password;
+String os;
 
 Arduboy2 arduboy;
 
 // Options init Menu
+const char option_init_menu0[] PROGMEM = "BadUSB";
+const char option_init_menu1[] PROGMEM = "Detect OS";
+const char option_init_menu2[] PROGMEM = "Password Manager";
+
+// Put init menu into an array
+const char * const options_init_menu[] PROGMEM =
+{
+  option_init_menu0,
+  option_init_menu1,
+  option_init_menu2,
+};
+
+// Options BadUSB Menu
 const char option_hid_menu0[] PROGMEM = "Windows";
 const char option_hid_menu1[] PROGMEM = "Linux";
 const char option_hid_menu2[] PROGMEM = "MacOS";
 
 // Put init menu into an array
-const char * const options_init_menu[] PROGMEM =
+const char * const options_hid_menu[] PROGMEM =
 {
   option_hid_menu0,
   option_hid_menu1,
@@ -52,10 +70,29 @@ const char * const options_macos_menu[] PROGMEM =
   option_macos_menu0,
 };
 
+// Options Password Manager Menu
+const char option_manager_menu0[] PROGMEM = "Twitter Password";
+const char option_manager_menu1[] PROGMEM = "Server 1 Password";
+const char option_manager_menu2[] PROGMEM = "Bank Pin";
+const char option_manager_menu3[] PROGMEM = "Server 1 Password";
+const char option_manager_menu4[] PROGMEM = "RPI Password";
+
+// Put init menu into an array
+const char * const options_manager_menu[] PROGMEM =
+{
+  option_manager_menu0,
+  option_manager_menu1,
+  option_manager_menu2,
+  option_manager_menu3,
+  option_manager_menu4,
+};
+
 const uint8_t optionCount = sizeof(options_init_menu) / sizeof(options_init_menu[0]);
+const uint8_t optionCount_hid = sizeof(options_hid_menu) / sizeof(options_hid_menu[0]);
 const uint8_t optionCount_windows = sizeof(options_windows_menu) / sizeof(options_windows_menu[0]);
 const uint8_t optionCount_linux = sizeof(options_linux_menu) / sizeof(options_linux_menu[0]);
 const uint8_t optionCount_macos = sizeof(options_macos_menu) / sizeof(options_macos_menu[0]);
+const uint8_t optionCount_manager = sizeof(options_manager_menu) / sizeof(options_manager_menu[0]);
 
 const __FlashStringHelper * FlashString(const char * string)
 {
@@ -69,11 +106,28 @@ uint8_t selectedIndex;
 uint8_t mode = 0;
 uint8_t optionMenuCount = optionCount;
 
+void setpassword() {
+  Keyboard.print(user);
+  delay(500);
+  Keyboard.press(KEY_TAB);
+  delay(100);
+  Keyboard.releaseAll();
+  delay(500);
+  Keyboard.press(KEY_RETURN);
+  delay(100);
+  Keyboard.releaseAll();
+  delay(500);
+  Keyboard.print(pass);
+  delay(500);
+  Keyboard.press(KEY_RETURN);
+  delay(100);
+  Keyboard.releaseAll();
+}
+
 void setup(void)
 {
   arduboy.begin();
   Serial.begin(9600);
-  Serial.println(mode);
   welcome_screen();  
   enterpin();
 }
@@ -101,35 +155,105 @@ void loop(void)
   }
 }
 
-  // Options select payload
-  selected_payload();
-
   // Options select menu
-  if(arduboy.justPressed(A_BUTTON)){
-    if(selectedIndex == 2 & mode == 0) {
+  if(arduboy.justPressed(B_BUTTON)){
+    if(selectedIndex == 0 & mode == 5) {
+      user = user1;
+      pass = password1;
+      setpassword();
+    }
+    else if(selectedIndex == 1 & mode == 5) {
+      user = user2;
+      pass = password2;
+      setpassword();
+    }
+    else if(selectedIndex == 2 & mode == 5) {
+      user = user3;
+      pass = password3;
+      setpassword();
+    }
+    else if(selectedIndex == 3 & mode == 5) {
+      user = user4;
+      pass = password4;
+      setpassword();
+    }
+    else if(selectedIndex == 4 & mode == 5) {
+      user = user5;
+      pass = password5;
+      setpassword();
+    }
+    else if(selectedIndex == 0 & mode == 4) {
+      PasswordlessSSH();
+    }
+    else if(selectedIndex == 1 & mode == 3) {
+      BasicTerminalCommands();
+    }
+    else if(selectedIndex == 0 & mode == 3) {
+      HelloWorld_Gnome();
+    }
+    else if(selectedIndex == 1 & mode == 2) {
+      ForkBomb();
+    }
+    else if(selectedIndex == 0 & mode == 2) {
+      HelloWorld_Win();
+    }
+    else if(selectedIndex == 0 & mode == 1) {
+      mode = 2;
+      optionMenuCount = optionCount_windows;
+      
+      maxIndex = optionMenuCount - 1;
+      //selected_payload();
+    }
+    else if(selectedIndex == 1 & mode == 1) {
       mode = 3;
+      optionMenuCount = optionCount_linux;
+      
+      maxIndex = optionMenuCount - 1;
+      //selected_payload();
+    }
+    else if(selectedIndex == 2 & mode == 1) {
+      mode = 4;
       optionMenuCount = optionCount_macos;
+      
+      maxIndex = optionMenuCount - 1;
+      //selected_payload();
+    }
+    else if(selectedIndex == 2 & mode == 0) {
+      mode = 5;
+      optionMenuCount = optionCount_manager;
       
       maxIndex = optionMenuCount - 1;
     }
      else if(selectedIndex == 1 & mode == 0) 
     {
-      mode = 2;
-      optionMenuCount = optionCount_linux;
+      FingerprintUSBHost.guessHostOS(os);
+      Serial.println(os);
+      arduboy.clear();
+  
+      // Set cursor position
+      arduboy.setCursor(0, 0);
+
+      arduboy.println(os);
+
+      arduboy.display();
+
+      delay(5000);
        
-      maxIndex = optionMenuCount - 1;    
+      maxIndex = optionMenuCount - 1;
+      welcome_screen();
+          
     }
     else if(selectedIndex == 0 & mode == 0)
     {
       mode = 1;
-      optionMenuCount = optionCount_windows;
+      optionMenuCount = optionCount_hid;
 
       maxIndex = optionMenuCount - 1;
     }
   }
 
   // Back button  
-  if(arduboy.justPressed(B_BUTTON))
+  if(arduboy.justPressed(A_BUTTON))
   {  
     mode = 0;
     optionMenuCount = optionCount;
@@ -163,40 +287,44 @@ void loop(void)
    if(mode == 0)
      arduboy.println(FlashString(pgm_read_word(&options_init_menu[i])));
    else if(mode == 1)
-     arduboy.println(FlashString(pgm_read_word(&options_windows_menu[i])));
+     arduboy.println(FlashString(pgm_read_word(&options_hid_menu[i])));
    else if(mode == 2)
-     arduboy.println(FlashString(pgm_read_word(&options_linux_menu[i])));
+     arduboy.println(FlashString(pgm_read_word(&options_windows_menu[i])));
    else if(mode == 3)
-     arduboy.println(FlashString(pgm_read_word(&options_macos_menu[i])));  
+     arduboy.println(FlashString(pgm_read_word(&options_linux_menu[i])));
+   else if(mode == 4)
+     arduboy.println(FlashString(pgm_read_word(&options_macos_menu[i]))); 
+   else if(mode == 5)
+     arduboy.println(FlashString(pgm_read_word(&options_manager_menu[i]))); 
   }
 
    // Update screen with buffer contents
    arduboy.display();
 }
 
-void selected_payload(){
+/*void selected_payload(){
   
   // MacOS X
-  if(arduboy.justPressed(A_BUTTON) & selectedIndex == 0 & mode == 3) {
+  if(arduboy.justPressed(A_BUTTON) & selectedIndex == 0 & mode == 4) {
     PasswordlessSSH();
   }
     
   // Linux
-  if(arduboy.justPressed(A_BUTTON) & selectedIndex == 0 & mode == 2) {
+  if(arduboy.justPressed(A_BUTTON) & selectedIndex == 0 & mode == 3) {
     HelloWorld_Gnome();
   }
-  if(arduboy.justPressed(A_BUTTON) & selectedIndex == 1 & mode == 2) {
+  if(arduboy.justPressed(A_BUTTON) & selectedIndex == 1 & mode == 3) {
     BasicTerminalCommands();
   }
 
   // Windows
-  if(arduboy.justPressed(A_BUTTON) & selectedIndex == 0 & mode == 1) {
+  if(arduboy.justPressed(A_BUTTON) & selectedIndex == 0 & mode == 2) {
     HelloWorld_Win();
   }
-  if(arduboy.justPressed(A_BUTTON) & selectedIndex == 1 & mode == 1) {
+  if(arduboy.justPressed(A_BUTTON) & selectedIndex == 1 & mode == 2) {
     ForkBomb();
   }
-}
+}*/
 
 void welcome_screen(void){
   // Clear screen buffer
@@ -205,7 +333,7 @@ void welcome_screen(void){
   // Set cursor position
   arduboy.setCursor(0, 0);
 
-  arduboy.println(F("ARDUBOY BadUSB attack"));
+  arduboy.println(F("ARDUBOY Hacking\n by Joel Serna Moreno"));
 
   arduboy.display();
   
